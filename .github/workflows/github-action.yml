@@ -2,9 +2,11 @@ name: Node.js CI
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   build:
@@ -15,26 +17,29 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run build --if-present
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Application
+        run: npm run build --if-present
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest .
-        
-      - name: Tag Docker Image
-        run: docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:${{ github.sha }}
+        run: |
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest .
+          echo "::set-output name=image_name::${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest"
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Push Docker Image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:${{ github.sha }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Install Watchtower
+        run: docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower ${{ needs.build.outputs.image_name }}

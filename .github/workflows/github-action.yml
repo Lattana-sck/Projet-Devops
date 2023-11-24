@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        if: github.event_name != 'pull_request'
+        run: docker build -t your-docker-image-name:latest .
+
+      - name: Build project
+        run: |
+          # Command to build your project (e.g., npm install, make, etc.)
+          # Replace the following with your actual build command
+          echo "Build your project here"
+
+      - name: Run unit tests
+        run: |
+          # Command to run your unit tests
+          # Replace the following with your actual test command
+          echo "Run your unit tests here"
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image
+        if: github.event_name != 'pull_request'
+        run: docker push your-docker-image-name:latest

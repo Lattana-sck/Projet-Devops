@@ -23,7 +23,7 @@ jobs:
       - run: npm run build --if-present
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest .
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest
 
       - name: Tag Docker Image
         run: docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:latest ${{ secrets.DOCKER_HUB_USERNAME }}/projet-devops:${{ github.sha }}

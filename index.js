@@ -14,7 +14,7 @@ app.get("/api", (req, res) => {
 app.post('/dockerhub-webhook', (req, res) => {
   console.log('Webhook received from DockerHub.');
 
-  // Exécuter le script de déploiement
+
   exec('bash deploy.sh', (error, stdout, stderr) => {
     if (error) {
       console.error(`Error: ${error}`);
